@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Tambah Jadwal</title>
+</head>
+<body>
+    <h1>Tambah Jadwal Baru</h1>
+    <form th:action="@{/admin/schedules/add}" th:object="${schedule}" method="post">
+        <label>Psikolog:</label>
+        <select th:field="{psychologist}">
+            <option th:each="p : ${psychologists}" th:value="${p}" th:text="${p.fullName}"></option>
+        </select><br/><br/>
+
+        <label>Tanggal & Waktu:</label>
+        <input type="datetime-local" th:field="{dateTime}" /><br/><br/>
+
+        <button type="submit">Simpan</button>
+    </form>
+</body>
+</html>

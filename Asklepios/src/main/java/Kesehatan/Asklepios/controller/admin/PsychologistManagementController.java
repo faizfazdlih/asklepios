@@ -1,63 +1,106 @@
 package Kesehatan.Asklepios.controller.admin;
 
-import java.util.List;
-
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.*;
 
 import Kesehatan.Asklepios.model.PsychologistProfile;
-import Kesehatan.Asklepios.service.PsychologistProfileService;
+import Kesehatan.Asklepios.model.User;
+import Kesehatan.Asklepios.model.User.Role;
+import Kesehatan.Asklepios.repository.PsychologistProfileRepository;
+import Kesehatan.Asklepios.repository.UserRepository;
 
-@RestController
+import java.math.BigDecimal;
+import java.util.List;
+import java.util.UUID;
+
+@Controller
 @RequestMapping("/admin/psychologists")
 public class PsychologistManagementController {
 
     @Autowired
-    private PsychologistProfileService profileService;
+    private PsychologistProfileRepository profileRepository;
+    @Autowired
+    private UserRepository userRepository;
 
     @GetMapping
-    public List<PsychologistProfile> getAllPsychologists() {
-        return profileService.getAll();
+    public String listPsychologists(Model model) {
+        List<PsychologistProfile> list = profileRepository.findAll();
+        model.addAttribute("psychologists", list);
+        return "admin/psychologists/list";
     }
 
-    @GetMapping("/{id}")
-    public ResponseEntity<PsychologistProfile> getPsychologistById(@PathVariable String id) {
-        PsychologistProfile profile = profileService.getById(id);
-        return ResponseEntity.ok(profile);
+    @GetMapping("/create")
+    public String showCreateForm(Model model) {
+        model.addAttribute("psychologist", new PsychologistProfile());
+    
+        // Ambil user dengan role PSYCHOLOGIST saja
+        List<User> users = userRepository.findByRole(Role.PSYCHOLOGIST);
+        model.addAttribute("users", users);
+    
+        return "admin/psychologists/create";
     }
 
-    @PostMapping
-    public ResponseEntity<PsychologistProfile> createPsychologist(@RequestBody PsychologistProfile profile) {
-        // Tambahkan validasi jika perlu
-        PsychologistProfile created = profileService.save(profile);
-        return ResponseEntity.ok(created);
+    @PostMapping("/save")
+    public String savePsychologist(@ModelAttribute PsychologistProfile psychologist,
+                                @RequestParam("userId") String userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("User tidak ditemukan"));
+        psychologist.setUser(user);
+
+        // Generate ID jika belum ada
+        if (psychologist.getId() == null || psychologist.getId().isEmpty()) {
+            psychologist.setId(UUID.randomUUID().toString());
+        }
+
+        profileRepository.save(psychologist);
+        return "redirect:/admin/psychologists";
     }
 
-    @PutMapping("/{id}")
-    public ResponseEntity<PsychologistProfile> updatePsychologist(@PathVariable String id, @RequestBody PsychologistProfile profile) {
-        PsychologistProfile existing = profileService.getById(id);
-        // Update field sesuai kebutuhan
-        existing.setLicenseNumber(profile.getLicenseNumber());
-        existing.setSpecialization(profile.getSpecialization());
-        existing.setExperienceYears(profile.getExperienceYears());
-        existing.setBio(profile.getBio());
-        existing.setPrice(profile.getPrice());
-        existing.setProfilePicture(profile.getProfilePicture());
-        PsychologistProfile updated = profileService.save(existing);
-        return ResponseEntity.ok(updated);
+    @GetMapping("/edit/{id}")
+    public String showEditForm(@PathVariable String id, Model model) {
+        PsychologistProfile profile = profileRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Invalid psychologist ID"));
+        List<User> users = userRepository.findByRole(Role.PSYCHOLOGIST);
+        model.addAttribute("users", users);
+        model.addAttribute("psychologist", profile);
+        return "admin/psychologists/edit";
     }
 
-    @DeleteMapping("/{id}")
-    public ResponseEntity<?> deletePsychologist(@PathVariable String id) {
-        profileService.deleteById(id);
-        return ResponseEntity.ok().build();
+    @PostMapping("/update")
+    public String updatePsychologist(@RequestParam("id") String id,
+                                    @RequestParam("userId") String userId,
+                                    @RequestParam("licenseNumber") String licenseNumber,
+                                    @RequestParam(value = "specialization", required = false) String specialization,
+                                    @RequestParam(value = "experienceYears", required = false, defaultValue = "0") int experienceYears,
+                                    @RequestParam("price") BigDecimal price,
+                                    @RequestParam(value = "bio", required = false) String bio,
+                                    @RequestParam(value = "profilePicture", required = false) String profilePicture) {
+
+        PsychologistProfile psychologist = profileRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Psikolog tidak ditemukan"));
+
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("User tidak ditemukan"));
+
+        // Set ulang data dari form
+        psychologist.setUser(user);
+        psychologist.setLicenseNumber(licenseNumber);
+        psychologist.setSpecialization(specialization);
+        psychologist.setExperienceYears(experienceYears);
+        psychologist.setPrice(price);
+        psychologist.setBio(bio);
+        psychologist.setProfilePicture(profilePicture);
+
+        profileRepository.save(psychologist);
+
+        return "redirect:/admin/psychologists";
+    }
+
+    @GetMapping("/delete/{id}")
+    public String deletePsychologist(@PathVariable String id) {
+        profileRepository.deleteById(id);
+        return "redirect:/admin/psychologists";
     }
 }

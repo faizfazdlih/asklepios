@@ -27,4 +27,12 @@ public class ScheduleService {
         return scheduleRepository.save(schedule);
     }
 
+    public List<Schedule> getAll() {
+        return scheduleRepository.findAll();
+    }
+    
+    public void deleteById(String id) {
+        scheduleRepository.deleteById(id);
+    }
+
 }
