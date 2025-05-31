@@ -5,13 +5,13 @@
 <h2>Register</h2>
 
 <form th:action="@{/auth/register}" method="post" th:object="${user}">
-    <input type="text" th:field="{fullName}" placeholder="Full Name" required /><br/>
-    <input type="email" th:field="{email}" placeholder="Email" required /><br/>
-    <input type="password" th:field="{password}" placeholder="Password" required /><br/>
-    <input type="text" th:field="{phone}" placeholder="Phone" /><br/>
+    <input type="text" th:field="*{fullName}" placeholder="Full Name" required /><br/>
+    <input type="email" th:field="*{email}" placeholder="Email" required /><br/>
+    <input type="password" th:field="*{password}" placeholder="Password" required /><br/>
+    <input type="text" th:field="*{phone}" placeholder="Phone" /><br/>
 
     <label>Gender:</label>
-    <select th:field="{gender}">
+    <select th:field="*{gender}">
         <option value="" disabled selected>Pilih Gender</option>
         <option th:value="MALE">Laki-laki</option>
         <option th:value="FEMALE">Perempuan</option>
@@ -19,7 +19,7 @@
     </select><br/>
 
     <label>Role:</label>
-    <select th:field="{role}">
+    <select th:field="*{role}">
         <option value="" disabled selected>Pilih Role</option>
         <option th:value="CLIENT">Client</option>
         <option th:value="PSYCHOLOGIST">Psikolog</option>
