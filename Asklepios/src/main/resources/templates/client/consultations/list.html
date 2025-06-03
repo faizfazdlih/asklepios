@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Daftar Konsultasi</title>
+    <link rel="stylesheet" href="/css/style.css" />
+</head>
+<body>
+    <h2>Daftar Konsultasi Anda</h2>
+    <table border="1">
+        <thead>
+            <tr>
+                <th>Tanggal & Waktu</th>
+                <th>Status</th>
+                <th>Psikolog</th>
+                <th>Catatan</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr th:each="consultation : ${consultations}">
+                <td th:text="${consultation.schedule.date} + ' ' + ${consultation.schedule.startTime} + ' - ' + ${consultation.schedule.endTime}">Waktu</td>
+                <td th:text="${consultation.status}">Status</td>
+                <td th:text="${consultation.schedule.psychologist.user.fullName}">Psikolog</td>
+                <td th:text="${consultation.notes}">Catatan</td>
+            </tr>
+        </tbody>
+    </table>
+</body>
+</html>

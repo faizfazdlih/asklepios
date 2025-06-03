@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Booking Konsultasi</title>
+    <link rel="stylesheet" href="/css/style.css" />
+</head>
+<body>
+    <h2>Booking Konsultasi</h2>
+    <p>
+        Anda akan memesan jadwal berikut:
+    </p>
+    <ul>
+        <li><strong>Tanggal:</strong> <span th:text="${schedule.date}"></span></li>
+        <li><strong>Jam:</strong> <span th:text="${schedule.startTime} + ' - ' + ${schedule.endTime}"></span></li>
+        <li><strong>Psikolog:</strong> <span th:text="${schedule.psychologist.user.fullName}"></span></li>
+    </ul>
+
+    <form th:action="@{/consultations/book}" method="post">
+        <input type="hidden" name="scheduleId" th:value="${schedule.id}" />
+        <button type="submit">Konfirmasi Booking</button>
+    </form>
+
+    <a href="/consultations">Kembali ke Daftar Konsultasi</a>
+</body>
+</html>

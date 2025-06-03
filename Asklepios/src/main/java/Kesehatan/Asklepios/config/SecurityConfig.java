@@ -22,8 +22,25 @@ public class SecurityConfig {
             .csrf(csrf -> csrf.disable())
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/auth/**").permitAll()
+                .requestMatchers("/client/**").hasRole("CLIENT")
+                .requestMatchers("/admin/**").hasRole("ADMIN")
+                .requestMatchers("/psychologist/**").hasRole("PSYCHOLOGIST")
                 .anyRequest().authenticated()
+            )
+            .formLogin(form -> form
+                .loginPage("/auth/login")
+                .loginProcessingUrl("/auth/login")
+                .usernameParameter("email") // <-- ini penting
+                .passwordParameter("password")
+                .defaultSuccessUrl("/", true)
+                .failureUrl("/auth/login?error=true")
+            )
+            .logout(logout -> logout
+                .logoutUrl("/logout")
+                .logoutSuccessUrl("/auth/login?logout")
+                .permitAll()
             )
             .build();
     }
+    
 }
